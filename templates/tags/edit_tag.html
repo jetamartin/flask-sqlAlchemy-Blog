@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Edit Tag</h2>
+<form method="POST">
+  <div class="form-group">
+    <label for="tagNameInput">Name</label>
+    <input type="text" class="form-control" id="tag-name-input" name="tagName" value={{tag.name}} placeholder="Enter tag name" required>
+  </div>
+  <a class="btn btn-outline-danger" href="/tags/{{tag.id}}" role="button">Cancel</a>
+  <button type="submit" class="btn btn-primary">Edit</button>
+</form>
+{% endblock %}

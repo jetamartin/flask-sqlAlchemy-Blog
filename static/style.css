@@ -1,0 +1,48 @@
+img {
+  width: 200px;
+  /* height: 100px; */
+  margin-bottom: 2rem;
+}
+.buttons {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+.user-name {
+  margin-bottom: .75rem
+}
+.post-detail-title {
+  margin-top: 1rem;
+}
+
+.post-author {
+  font-style: italic;
+} 
+
+.error {
+  background-color: rgb(217,83,79);
+}
+
+.success {
+  background-color: rgb(66,139,202);
+}
+
+.msgs {  
+  color: white;
+  border-radius: .5rem;
+  padding: .5rem;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+.top5-posts {
+  width: 75%;
+  margin-left: 1rem;
+  background-color: rgba(110, 110, 121, 0.15);
+  margin-bottom: 1rem;
+  border-radius: .5rem;
+  padding: 1rem;
+}
+
+.top5-post-heading {
+  margin-bottom: 1.5rem
+}
+

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{post.title}}</h1>
+<p>{{post.content}}</p>
+<p class="post-author">By
+  <span>{{user.get_full_name}} on</span>
+  <span class="small">{{post.simple_post_time}}</span>
+</p>
+<p>
+  <span class="small font-weight-bold">Tags:</span>
+  {% for tag in post.tags %} 
+    <span class="font-italic badge badge-primary">{{tag.name}}</span>
+  {% endfor %}
+</p>
+<form>
+  <button class="btn btn-outline-primary"
+    formmethod="GET" 
+    formaction="/users/{{user.id}}" >Cancel</button>
+  <button class="btn btn-primary" 
+    formmethod="GET"
+    formaction="/posts/{{post.id}}/edit" >Edit</button>
+  <button class="btn btn-danger" 
+    formmethod="POST"
+    formaction="/posts/{{post.id}}/delete">Delete</button>
+</form>
+{% endblock %}

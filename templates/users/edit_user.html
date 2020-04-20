@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="">
+    <h2>Edit User</h2>
+    <form method="POST">
+      <div class="form-group">
+        <label for="firstNameInput">First Name</label>
+        <input type="text" class="form-control" id="firstNameInput" name="firstName" value="{{user.first_name}}" placeholder="Enter first name" required>
+      </div>
+      <div class="form-group">
+        <label for="lastNameInput">Last Name</label>
+        <input type="text" class="form-control" id="lastNameInput" name="lastName" value="{{user.last_name}}" placeholder="Enter first name" placeholder="Enter last name" required>
+      </div>
+      <div class="form-group">
+        <label for="profileImage">Profile Image URL (optional)</label>
+        <input type="url" class="form-control" id="profileImage" name="profileImage" value="{{user.image_url}}" placeholder="Enter URL for image profile">
+      </div>
+      <a class="btn btn-outline-danger" href="/users/{{user.id}}" role="button">Cancel</a>
+      <button type="submit" class="btn btn-success">Save</button>
+    </form>
+  </div>
+{% endblock %}

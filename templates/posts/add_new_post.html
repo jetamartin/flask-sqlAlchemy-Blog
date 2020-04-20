@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="">
+    <form method="POST">
+    <h2>Add Post for {{user.get_full_name}}
+      <div class="form-group">
+        <label for="postTitleInput">Title</label>
+        <input type="text" class="form-control" id="postTitleInput" name="postTitle" placeholder="Enter Post Title" required>
+      </div>
+      <div class="form-group">
+        <label for="postContentInput">Content</label>
+        <input type="textarea" class="form-control" id="postContentInput" name="postContent" placeholder="Enter Post Content" required>
+      </div>
+      {% for tag in tags %}
+      <div class="form-check small">
+        <input class="form-check-input small" type="checkbox" value="{{tag.id}}" name="tags" id="{{tag.id}}">
+        <label class="form-check-label small" for="{{tag.id}}">
+          {{tag.name}}
+        </label>
+      </div>
+      {% endfor %}
+      <a class="btn btn-outline-danger" href='/users/{{user.id}}' role="button">Cancel</a>
+      <button type="submit" class="btn btn-success">Add</button>
+
+    </form>
+  </div>
+{% endblock %}
