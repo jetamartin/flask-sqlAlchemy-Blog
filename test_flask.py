@@ -28,63 +28,74 @@ db.create_all()
 #########################################################
 
 
+class UserViewsTestCase(TestCase):
+    """Tests for views for Users."""
 
-# class UserViewsTestCase(TestCase):
-#     """Tests for views for Users."""
+    def setUp(self):
+        """Add sample user."""
 
-#     def setUp(self):
-#         """Add sample user."""
+        db.drop_all()
+        db.create_all()
 
-#         User.query.delete()
+        User.query.delete()
 
-#         user = User(first_name="Joe", last_name="Blow", image_url="http://www.profile.com")
-#         db.session.add(user)
-#         db.session.commit()
+        user = User(first_name="Joe", last_name="Blow", image_url="http://www.profile.com")
+        db.session.add(user)
+        db.session.commit()
 
-#         self.user_id = user.id
+        self.user_id = user.id
 
-#     def tearDown(self):
-#         """Clean up any fouled transaction."""
+    def tearDown(self):
+        """Clean up any fouled transaction."""
 
-#         db.session.rollback()
+        db.session.rollback()
 
-#     def test_list_users(self):
-#         with app.test_client() as client:
-#             resp = client.get("/users")
-#             html = resp.get_data(as_text=True)
+    def test_list_users(self):
+        with app.test_client() as client:
+            resp = client.get("/users")
+            html = resp.get_data(as_text=True)
 
-#             self.assertEqual(resp.status_code, 200)
-#             self.assertIn('Blow', html)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Blow', html)
 
-#     def test_show_new_user_form(self):
-#         with app.test_client() as client:
-#             resp = client.get("/users/new")
-#             html = resp.get_data(as_text=True)
+    def test_show_new_user_form(self):
+        with app.test_client() as client:
+            resp = client.get("/users/new")
+            html = resp.get_data(as_text=True)
 
-#             self.assertEqual(resp.status_code, 200)
-#             self.assertIn('First Name', html)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('First Name', html)
 
-#     def test_show_user_detail(self):
-#         with app.test_client() as client:
-#             resp = client.get(f"/users/{self.user_id}")
-#             html = resp.get_data(as_text=True)
+    def test_show_user_detail(self):
+        with app.test_client() as client:
+            resp = client.get(f"/users/{self.user_id}")
+            html = resp.get_data(as_text=True)
 
-#             self.assertEqual(resp.status_code, 200)
-#             self.assertIn('Edit', html)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Edit', html)
 
-#     def test_edit_user_detail(self):
-#         with app.test_client() as client:
-#             resp = client.get(f"/users/{self.user_id}/edit")
-#             html = resp.get_data(as_text=True)
+    def test_edit_user_detail(self):
+        with app.test_client() as client:
+            resp = client.get(f"/users/{self.user_id}/edit")
+            html = resp.get_data(as_text=True)
 
-#             self.assertEqual(resp.status_code, 200)
-#             self.assertIn('<h2>Edit User</h2>', html)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h2>Edit User</h2>', html)
+
+#########################################################
+## PostViewsTestCase
+#########################################################
+
 
 class PostViewsTestCase(TestCase):
     """Tests for views for Users."""
 
     def setUp(self):
         """Add test User and associated Post ."""
+
+        # db.drop_all()
+        # db.create_all()
+
         # User.query.delete()
         Post.query.delete()
 
@@ -172,12 +183,20 @@ class PostViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Post2.2', html)
 
+
+
+# #########################################################
+# ## TagViews Test Cases
+# #########################################################
+
 class TagViewsTestCase(TestCase):
     """Tests for views for Tags."""
 
     def setUp(self):
         """Add test User and associated Post ."""
-        User.query.delete()
+        db.drop_all()
+        db.create_all()
+        
         User.query.delete()
         Post.query.delete()
         Tag.query.delete()
@@ -200,7 +219,8 @@ class TagViewsTestCase(TestCase):
         #             content = "This is the content for Post 2",
         #             user_id = self.user_id)  
 
-        # db.session.add(post)
+        db.session.add(post)
+        db.session.commit()
         # db.session.add(post1)
         # db.session.commit()
 
@@ -212,15 +232,6 @@ class TagViewsTestCase(TestCase):
         tag4 = Tag(name = 'Noyce!')
 
 
-        # db.session.add(tag1)
-        # db.session.add(tag2)
-        # db.session.add(tag3)
-        # db.session.add(tag4)
-
-        # db.session.commit()
-        
-        # self.tag_id = tag1.id
-
         post.tags.append(tag1)
         post.tags.append(tag2)
         post.tags.append(tag4)
@@ -231,8 +242,6 @@ class TagViewsTestCase(TestCase):
         self.post_id = post.id
         self.tag_id = tag1.id
 
-
- 
 
 
     def tearDown(self):
@@ -249,7 +258,9 @@ class TagViewsTestCase(TestCase):
             # import pdb; pdb.set_trace()
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Create Tag', html)
-    
+            self.assertIn('Post', html)
+ 
+  
 
     def test_add_new_tag(self): 
         """ Test that new Tag is added to database """
@@ -283,7 +294,9 @@ class TagViewsTestCase(TestCase):
 
             resp = client.get(f'/tags/{self.tag_id}')
             html = resp.get_data(as_text=True)
+
             # import pdb; pdb.set_trace()
+
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h2>Awesome</h2>', html)
             self.assertIn('Post 1', html)
@@ -298,6 +311,8 @@ class TagViewsTestCase(TestCase):
             # import pdb; pdb.set_trace()
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h2>Edit Tag</h2>', html)
+            self.assertIn('Post 1', html)
+            self.assertIn('checked', html)
 
 
     def test_save_edited_tag(self):
@@ -305,7 +320,7 @@ class TagViewsTestCase(TestCase):
         with app.test_client() as client:
             resp = client.post(f'/tags/new', data={'tagName':'Yolo'}, follow_redirects=True )       
             html = resp.get_data(as_text=True)
-
+            # import pdb; pdb.set_trace()
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h2>Tags</h2>', html)

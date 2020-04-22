@@ -35,6 +35,12 @@ class Post(db.Model):
   content = db.Column(db.String(200),nullable = False)
   createdAt = db.Column(db.DateTime, nullable = False, default=datetime.datetime.now)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id'),nullable = False)
+  # tags = db.relationship('Tag', secondary="posts_tags", backref="posts")
+
+  def __repr__(self):
+    """Show info about Post."""
+    u = self
+    return f"<Post {u.title} {u.content}>"
 
   
   @property
@@ -50,13 +56,16 @@ class Tag(db.Model):
 
   posts = db.relationship('Post', secondary="posts_tags", backref="tags")
 
+  def __repr__(self):
+    """Show info about Post."""
+    u = self
+    return f"<Tag {u.name}>"
 
 class PostTag(db.Model):
   __tablename__ = 'posts_tags'
   post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key = True)
   tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key = True)
  
-
 
 
 # UniqueConstraint("id", "candidate_id")

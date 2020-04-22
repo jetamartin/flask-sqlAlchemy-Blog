@@ -8,8 +8,12 @@
   </a>
 </ul>
 {% endfor %}
-
-<a class="btn btn-primary" href="/tags/{{tag.id}}/edit" role="button">Edit</a>
-<a class="btn btn-danger" href="/tags/{{tag_id}}/delete" role="button">Delete</a>
-
+<form>
+  <button class="btn btn-primary" 
+    formmethod="GET"
+    formaction="/tags/{{tag.id}}/edit" >Edit</button>
+  <button class="btn btn-danger"
+    formmethod="POST" 
+    formaction='/tags/{{tag.id}}/delete'>Delete</button>
+</form>
 {% endblock %}

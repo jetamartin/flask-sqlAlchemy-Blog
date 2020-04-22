@@ -131,14 +131,9 @@ def add_new_post(user_id):
 
   # Retrieve all tag records with matching tag_ids so we can update them
   tags = Tag.query.filter(Tag.id.in_(tag_ids)).all()
-  #  ????????????????????????????????????????????????????
-  #  ??? How is it that we are add 'user' and 'tags' in list of params when those fields don't exist in POST class.
-  #  ??????????????????????????????????????????????????
   new_post = Post(title = post_title, content = post_content, user= user, tags=tags)
   db.session.add(new_post)
   db.session.commit()
-
-  # user_posts = Post.query.filter_by(user_id=user.id).all()
   flash(f"'{post_title}' post successfully added.", 'success')
   return redirect(f"/users/{user_id}")
 
@@ -178,7 +173,7 @@ def save_post_edits(post_id):
   
   db.session.add(post)
   db.session.commit()
-  # user = User.query.get_or_404(post.user_id)
+ 
   flash(f"'{post.title}' post successfully edited.", 'success')
 
   return redirect(f"/users/{post.user_id}" )
@@ -190,20 +185,27 @@ def save_post_edits(post_id):
 @app.route('/tags/new')
 def show_add_new_tag_form():
   """Display form to create new tag."""
-  # posts = Post.query.all()
-  return render_template("tags/create_tag.html")
+  posts = Post.query.all()
+  return render_template("tags/create_tag.html", posts = posts)
 
 @app.route('/tags/new', methods=['POST'])
 def add_new_tag():
   """Add new tag to DB and redirect to list of tags"""
   name = request.form['tagName'].strip().capitalize()
-  new_tag = Tag(name = name)
+  post_ids = [int(num) for num in request.form.getlist("posts")]
+  posts = Post.query.filter(Post.id.in_(post_ids)).all()
+
+  # ??? Don't unsderstand how it is possible to pass in an extra param(i.e., posts)
+  # into Tag Class and how passing that parameter SPECIFICALLY causes the posts.tags table
+  # to be populated. 
+  new_tag = Tag(name = name, posts = posts)
+
   db.session.add(new_tag)
   db.session.commit()
   tags = Tag.query.all()
-  # posts = Post.query.get_or_404()
+
   flash(f"'{new_tag.name}' tag was successfully created.", 'success')
-  return render_template("tags/list_tags.html", tags = tags)
+  return redirect('/tags')
 
 @app.route('/tags')
 def show_all_tags():
@@ -221,6 +223,7 @@ def show_tag_detail(tag_id):
 def show_tag_edit_form(tag_id):
   tag = Tag.query.get_or_404(tag_id)
   posts = Post.query.all()
+  # import pdb; pdb.set_trace()
   return render_template('tags/edit_tag.html', tag=tag, posts = posts)
 
 @app.route('/tags/<int:tag_id>/edit', methods=['POST'])
@@ -230,6 +233,7 @@ def save_edited_tag(tag_id):
   tag.name = request.form['tagName'].strip().capitalize()
 
   post_ids = [int(num) for num in request.form.getlist("posts")]
+  import pdb; pdb.set_trace()
   tag.posts = Post.query.filter(Post.id.in_(post_ids)).all()
 
   db.session.add(tag)
