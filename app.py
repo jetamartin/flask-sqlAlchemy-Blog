@@ -29,7 +29,8 @@ def root():
   """Redirect to List Uses page."""
  
   posts = Post.query.order_by(Post.createdAt.desc()).limit(5).all()
-  return render_template('index.html', posts=posts)
+  tags = Tag.query.all()
+  return render_template('index.html', posts=posts, tags=tags)
   
 @app.route('/users')
 def list_users():

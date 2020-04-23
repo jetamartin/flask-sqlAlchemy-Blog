@@ -18,13 +18,7 @@ db.create_all()
 
 #########################################################
 # Test cases to add:
-#  * Test custom 404 page
-#  * Test sort of user's on sort list page
-#  * Test cascade deletion
-#  * Test new root page of last 5 posts
-#  * Test all Tag methods
-#  * Update User and Post Test to reflect Tag additons
-
+# None at this time
 #########################################################
 
 
@@ -38,25 +32,59 @@ class UserViewsTestCase(TestCase):
         db.create_all()
 
         User.query.delete()
-
         user = User(first_name="Joe", last_name="Blow", image_url="http://www.profile.com")
+        user1 = User(first_name="Franklin", last_name="Jones", image_url="http://www.profile.com")
+        db.session.add(user1)
         db.session.add(user)
         db.session.commit()
 
         self.user_id = user.id
+    
+        # Create two posts and associate them with user 1
+        post = Post(title = "Post 1",
+                     content = "This is the content for Post 1",
+                     user_id = self.user_id)
+        # post2 = Post(title = "Post 2",
+        #             content = "This is the content for Post 2",
+        #             user_id = self.user_id)  
+
+        tag1 = Tag(name = 'Awesome')
+        tag2 = Tag(name = 'Wow!')
+ 
+        post.tags.append(tag1)
+        post.tags.append(tag2)
+ 
+        db.session.add(post)
+        db.session.commit()
+
+        # import pdb; pdb.set_trace()
+        self.post_id = post.id
+        self.tag_id = tag1.id
+
 
     def tearDown(self):
         """Clean up any fouled transaction."""
-
         db.session.rollback()
+
+    def test_custom_404_page(self):
+        """ Test custom 404 page displayed on bad route"""
+        with app.test_client() as client:
+            resp = client.get("/xyz")
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 404)
+            self.assertIn('What you were looking for is just not there!', html)        
+
 
     def test_list_users(self):
         with app.test_client() as client:
             resp = client.get("/users")
             html = resp.get_data(as_text=True)
-
+            import pdb; pdb.set_trace()
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('Blow', html)
+            # Note..the following also test for alphabetical sorting of users
+            self.assertIn('<li><a href="/users/2">Joe Blow</li></a>\n    </ul>\n    \n    <ul>\n      <li><a href="/users/1">Franklin Jones</li></a>', html)
+            # self.assertIn('Franklin Jones</li>', html)
 
     def test_show_new_user_form(self):
         with app.test_client() as client:
@@ -82,6 +110,15 @@ class UserViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h2>Edit User</h2>', html)
 
+    def test_delete_user(self):
+        with app.test_client() as client:
+            resp = client.get(f"/users/{self.user_id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('All Users',html)
+            self.assertNotIn('Joe Blow</li>', html)
+
 #########################################################
 ## PostViewsTestCase
 #########################################################
@@ -93,11 +130,12 @@ class PostViewsTestCase(TestCase):
     def setUp(self):
         """Add test User and associated Post ."""
 
-        # db.drop_all()
-        # db.create_all()
+        db.drop_all()
+        db.create_all()
 
         # User.query.delete()
         Post.query.delete()
+        Tag.query.delete()
 
         #  Create User
         user = User(first_name="Joe", last_name="Blow", image_url="http://www.profile.com")
@@ -110,20 +148,47 @@ class PostViewsTestCase(TestCase):
         post = Post(title = "Post 1",
                      content = "This is the content for Post 1",
                      user_id = self.user_id)
+
         # post2 = Post(title = "Post 2",
         #             content = "This is the content for Post 2",
         #             user_id = self.user_id)  
 
+        tag1 = Tag(name = 'Awesome')
+        tag2 = Tag(name = 'Wow!')
+ 
+        post.tags.append(tag1)
+        post.tags.append(tag2)
+ 
         db.session.add(post)
-        # db.session.add(post2)
         db.session.commit()
 
+        # import pdb; pdb.set_trace()
         self.post_id = post.id
+        self.tag_id = tag1.id
+
+        # db.session.add(post)
+        # # db.session.add(post2)
+        # db.session.commit()
+
+        # self.post_id = post.id
 
     def tearDown(self):
         """Clean up any fouled transaction."""
 
         db.session.rollback()  
+
+
+    def test_root_page(self):
+        """ Test root page that list last 5 posts """
+        with app.test_client() as client:
+            resp = client.get("/")
+            html = resp.get_data(as_text=True)
+            # import pdb; pdb.set_trace()
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Blogly Recent Posts', html)
+            self.assertIn('Awesome', html)
+            self.assertIn('Wow!', html)
+
 
     def test_show_new_post_form(self):
         """Test that new Post form is displayed properly """
@@ -133,6 +198,9 @@ class PostViewsTestCase(TestCase):
             # import pdb; pdb.set_trace()
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Add Post for', html)
+            self.assertIn('Awesome', html)
+            self.assertIn('Wow!', html)
+
 
 
     def test_add_new_post(self):
@@ -152,6 +220,9 @@ class PostViewsTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('This is the content for Post 1',html)
+            self.assertIn('Awesome', html)
+            self.assertIn('Wow!', html)
+
 
     def test_delete_post(self):
         """ Test that deleted Post is removed"""
@@ -165,6 +236,8 @@ class PostViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertNotIn('This is the content for Post 1',html)
 
+
+
     def test_show_post_edit_form(self):
         """ Test that Edit Post View is displayed """
         with app.test_client() as client:
@@ -173,6 +246,10 @@ class PostViewsTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Edit Post', html)
+            self.assertIn('Awesome', html)
+            self.assertIn('Wow!', html)
+            self.assertIn('checked', html)
+        
 
     def test_save_post_edits(self):
         """Test that edited post is saved """
@@ -228,17 +305,19 @@ class TagViewsTestCase(TestCase):
 
         tag1 = Tag(name = 'Awesome')
         tag2 = Tag(name = 'Wow!')
-        # tag3 = Tag(name = 'YOLO')
+        tag3 = Tag(name = 'Ok')
         tag4 = Tag(name = 'Noyce!')
 
 
         post.tags.append(tag1)
         post.tags.append(tag2)
+        post.tags.append(tag3)
         post.tags.append(tag4)
 
         db.session.add(post)
         db.session.commit()
 
+        # import pdb; pdb.set_trace()
         self.post_id = post.id
         self.tag_id = tag1.id
 
@@ -258,7 +337,8 @@ class TagViewsTestCase(TestCase):
             # import pdb; pdb.set_trace()
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Create Tag', html)
-            self.assertIn('Post', html)
+            self.assertIn('Post 1', html)
+     
  
   
 
@@ -286,7 +366,6 @@ class TagViewsTestCase(TestCase):
             self.assertIn('Yolo', html)
             self.assertIn('Awesome', html)
 
-# ############################################################
     def test_show_tag_detail(self):
         """  Test that a tag's details page is displayed """
         with app.test_client() as client:
@@ -300,7 +379,6 @@ class TagViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h2>Awesome</h2>', html)
             self.assertIn('Post 1', html)
-    # ############################################################
 
 
     def test_show_tag_edit_form(self):
@@ -338,7 +416,3 @@ class TagViewsTestCase(TestCase):
             self.assertIn('<h2>Tags</h2>', html)
             self.assertNotIn('Awesome</li></a>', html)      
     
-# data={'title':'Post2', 'content':'This is the content for Post2'}        
-# data = dict(username="test@gmail.com", password='test')
-# res.....follow-redirects=True
-# res = client.post(''), data={'color': 'orange'}
